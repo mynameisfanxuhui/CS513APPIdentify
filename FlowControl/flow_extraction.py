@@ -31,16 +31,15 @@ class CFlow():
         self.m_ByteOut = 0
         self.m_ByteIn = 0
         self.m_ByteOutInRatio = 0
-        self.m_ByteOutMax = 0
-        self.m_ByteOutMin = float('inf')
-        self.m_ByteInMax = 0
-        self.m_ByteInMin = float('inf')
+        self.m_ByteOutMax = 1
+        self.m_ByteOutMin = 1
+        self.m_ByteInMax = 1
+        self.m_ByteInMin = 1
         self.m_ByteInMedian = 0
         self.m_ByteOutMedian = 0
-        #variance
+        # variance
         self.m_ByteInVar = 0
         self.m_ByteOutVar = 0
-
 
         self.m_StartTime = float(sTime)
         self.m_LastActivityTime = float(sTime)
@@ -49,9 +48,6 @@ class CFlow():
         self.m_IntervalTimeMin = 0
         self.m_IntervalTimeMedian = 0
         self.m_IntervalTimeVariance = 0
-
-
-
 
         self.m_TimeList = []
         self.m_LenList = []
@@ -70,7 +66,6 @@ class CFlow():
         else:
             return False
 
-
     def inComePacket(self, bIn, sProtocol, iLen, sInfo):
         if bIn:
             self.m_InByteList.append(iLen)
@@ -78,8 +73,7 @@ class CFlow():
         else:
             self.m_OutByteList.append(iLen)
 
-
-    #After flow finished, we need to classify features.
+    # After flow finished, we need to classify features.
     def FlowFinished(self):
         # time part
         # print("timeInterval list is", self.m_IntervalList)
@@ -94,33 +88,47 @@ class CFlow():
         self.m_TimeList.append(self.m_IntervalTimeMedian)
         self.m_TimeList.append(self.m_IntervalTimeVariance)
 
-
-
-
-
-
-        #TODO: If there is no data, what to do?
+        # TODO: If there is no data, what to do?
         if not self.m_InByteList or not self.m_OutByteList:
-            return
-        # len part
-        self.m_PacketInCount = len(self.m_InByteList)
-        # TODO: Currently assume len equal to byte, maybe change later.
-        self.m_ByteIn = sum(self.m_InByteList)
-        self.m_ByteInMax = max(self.m_InByteList)
-        self.m_ByteInMin = min(self.m_InByteList)
-        self.m_ByteInMedian = GetMedian(self.m_InByteList)
-        self.m_ByteInVar = GetVariance(self.m_InByteList)
-        self.m_PacketOutCount = len(self.m_OutByteList)
-        self.m_ByteOut = sum(self.m_OutByteList)
-        self.m_ByteOutMax = max(self.m_OutByteList)
-        self.m_ByteOutMin = min(self.m_OutByteList)
-        self.m_ByteOutMedian = GetMedian(self.m_OutByteList)
-        self.m_ByteOutVar = GetVariance(self.m_OutByteList)
+            # return
+            pass
+        else:
+            # len part
+            self.m_PacketInCount = len(self.m_InByteList)
+            # TODO: Currently assume len equal to byte, maybe change later.
+            self.m_ByteIn = sum(self.m_InByteList)
+            if self.m_ByteIn == 0:
+                self.m_ByteIn = 1
+            self.m_ByteInMax = max(self.m_InByteList)
+            if self.m_ByteInMax == 0:
+                self.m_ByteInMax = 1
+            self.m_ByteInMin = min(self.m_InByteList)
+            if self.m_ByteInMin == 0:
+                self.m_ByteInMin = 1
+            self.m_ByteInMedian = GetMedian(self.m_InByteList)
+            if self.m_ByteInMedian == 0:
+                self.m_ByteInMedian = 1
+            self.m_ByteInVar = GetVariance(self.m_InByteList)
+            if self.m_ByteInVar == 0:
+                self.m_ByteInVar = 1
+            self.m_PacketOutCount = len(self.m_OutByteList)
+            if self.m_PacketOutCount == 0:
+                self.m_PacketOutCount = 1
+            self.m_ByteOut = sum(self.m_OutByteList)
+            if self.m_ByteOut == 0:
+                self.m_ByteOut = 1
+            self.m_ByteOutMax = max(self.m_OutByteList)
+            if self.m_ByteOutMax == 0:
+                self.m_ByteOutMax = 1
+            self.m_ByteOutMin = min(self.m_OutByteList)
+            if self.m_ByteOutMin == 0:
+                self.m_ByteOutMin = 1
+            self.m_ByteOutMedian = GetMedian(self.m_OutByteList)
+            self.m_ByteOutVar = GetVariance(self.m_OutByteList)
 
-        # The in cannot be zero because we always init with an in packet.
-        self.m_PacketOutInRatio = float(self.m_PacketOutCount) / self.m_PacketInCount
-        self.m_ByteOutInRatio = float(self.m_ByteOut) / self.m_ByteIn
-
+            # The in cannot be zero because we always init with an in packet.
+            self.m_PacketOutInRatio = float(self.m_PacketOutCount) / self.m_PacketInCount
+            self.m_ByteOutInRatio = float(self.m_ByteOut) / self.m_ByteIn
 
         self.m_LenList.append(self.m_PacketOutCount)
         self.m_LenList.append(self.m_PacketInCount)
@@ -137,11 +145,7 @@ class CFlow():
         self.m_LenList.append(self.m_ByteInVar)
         self.m_LenList.append(self.m_ByteOutVar)
 
-
-
-
-
-        #other part
+        # other part
         self.m_MaxList.append(self.m_ByteOutMax)
         self.m_MaxList.append(self.m_ByteInMax)
         self.m_MaxList.append(self.m_IntervalTimeMax)
@@ -154,14 +158,9 @@ class CFlow():
         self.m_MedianList.append(self.m_ByteOutMedian)
         self.m_MedianList.append(self.m_IntervalTimeMedian)
 
-
         self.m_VarianceList.append(self.m_ByteInVar)
         self.m_VarianceList.append(self.m_ByteOutVar)
         self.m_VarianceList.append(self.m_IntervalTimeVariance)
-
-
-
-
 
     def ShowAttribute(self):
         print(self.m_PacketOutCount,
@@ -171,20 +170,58 @@ class CFlow():
               self.m_ByteIn,
               self.m_ByteOutInRatio)
 
+    def get_features(self, sFeatureType):
+        if sFeatureType == 'all':
+            return self.m_TimeList + self.m_LenList
 
-    def get_features(self):
+        if sFeatureType == 'dis':
+            return self.m_LenList
+
+        if sFeatureType == 'time':
+            return self.m_TimeList
+
+        if sFeatureType == 'max':
+            return self.m_MaxList
+
+        if sFeatureType == 'median':
+            return self.m_MedianList
+        if sFeatureType == 'min':
+            return self.m_MinList
+        if sFeatureType == 'variance':
+            return self.m_VarianceList
+
+
+
+
+
         # features = []
+        # features.append(self.m_DurationTime)
+        # features.append(self.m_IntervalTimeMax)
+        # features.append(self.m_IntervalTimeMin)
+        # features.append(self.m_IntervalTimeMedian)
+        # features.append(self.m_IntervalTimeVariance)
         # features.append(self.m_PacketOutCount)
         # features.append(self.m_PacketInCount)
         # features.append(self.m_PacketOutInRatio)
         # features.append(self.m_ByteOut)
         # features.append(self.m_ByteIn)
+        # features.append(self.m_ByteOutMin)
+        # features.append(self.m_ByteOutMax)
+        # features.append(self.m_ByteOutMedian)
         # features.append(self.m_ByteOutInRatio)
-        # return features
-        return self.m_LenList + self.m_TimeList
+        # features.append(self.m_ByteInMax)
+        # features.append(self.m_ByteInMin)
+        # features.append(self.m_ByteInMedian)
+        # features.append(self.m_ByteInVar)
+        # features.append(self.m_ByteOutVar)
+
+
+        #return features
 
 
 def GenerateFlow(flie):
+    sPath = "C:\\Users\\torres_fan\\Desktop\\captureData"
+    flie = sPath + '\\' + flie
     flowList = []  # This will be used for storing flow.
     activeDict = {}  # This is used to store currently active flow.
     with open(flie) as csv_file:
@@ -306,9 +343,9 @@ def get_metrics(target, logits, one_hot_rep=True):
         predict = logits
 
     accuracy = accuracy_score(label, predict)
-    precision = precision_score(label, predict)
-    recall = recall_score(label, predict)
-    f1_score_val = f1_score(label, predict)
+    precision = precision_score(label, predict, average='micro')
+    recall = recall_score(label, predict, average='micro')
+    f1_score_val = f1_score(label, predict, average='micro')
 
     return accuracy, precision, recall, f1_score_val
 
@@ -319,33 +356,53 @@ def get_train_test_split(samples_features, target_labels):
     return X_train, X_test, y_train, y_test
 
 
-if __name__ == "__main__":
 
-    flowList_weibo = GenerateFlow('weibo.csv')
-    for oFlow in flowList_weibo:
-        print(oFlow.get_features())
-    # flowList_douyin = GenerateFlow('douyin.csv')
-    # weibo = []
-    # douyin = []
-    # for oFlow in flowList_weibo:
-    #     #         oFlow.ShowAttribute()
-    #     weibo.append(oFlow.get_features())
+def  GetResult(fileList, sFeatureType):
+    arrayList = []
+    for sFile in fileList:
+        tempFlowList = GenerateFlow(sFile)
+        tempFeatureList = []
+        for oFlow in tempFlowList:
+            tempFeatureList.append(oFlow.get_features(sFeatureType))
+        featureArray = np.array(tempFeatureList)
+        arrayList.append(featureArray)
+    labelList = []
+    for i, a in enumerate(arrayList,1):
+        labelList.append(np.ones(len(a)) * i)
+
+
+    feature_array = np.concatenate(arrayList, axis=0)
+    target_labels = np.concatenate(labelList, axis=0)
+    X_train, X_test, y_train, y_test = get_train_test_split(feature_array, target_labels)
+    # show classification result
+    get_basic_model_results(X_train, X_test, y_train, y_test)
+
+
+
+if __name__ == '__main__':
+    # print("This is the result of default,douyin, tantantang, all features:")
+    # GetResult(['default.csv','douyin.csv', 'tantantang.csv', ], 'all')
+    # print("This is the result of douyin, tantantang, all features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', ], 'all')
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, all features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'all')
+
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, len features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'dis')
     #
-    # for oFlow in flowList_douyin:
-    #     douyin.append(oFlow.get_features())
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, time features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'time')
     #
-    # weibo = np.array(weibo)
-    # douyin = np.array(douyin)
-    # feature_array = np.concatenate([weibo, douyin], axis=0)
-    # target_labels = np.concatenate([np.ones(len(weibo)), np.zeros(len(douyin))], axis=0)
-    # X_train, X_test, y_train, y_test = get_train_test_split(feature_array, target_labels)
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, max features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'max')
     #
-    # # show classification result
-    # get_basic_model_results(X_train, X_test, y_train, y_test)
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, min features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'min')
+    #
+    # print("This is the result of douyin, tantantang, zhihu, jingdong, median features:")
+    # GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'median')
 
-
-
-
-
+    print("This is the result of douyin, tantantang, zhihu, jingdong, variance features:")
+    GetResult(['douyin.csv', 'tantantang.csv', 'jingdong.csv', 'zhihu.csv'], 'variance')
 
 

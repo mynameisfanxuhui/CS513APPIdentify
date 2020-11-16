@@ -1,9 +1,6 @@
 import statistics
 
 
-
-
-
 def GetMedian(targetList):
     return sorted(targetList)[len(targetList) // 2]
 
